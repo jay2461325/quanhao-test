@@ -1,0 +1,122 @@
+/* 全站共用頁面標題：HTML 提供文字，CSS 統一層級與外觀 */
+.page-heading { color: #174c35; }
+.page-heading__title {
+  margin: 0 !important;
+  color: #174c35 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+}
+.page-heading__description {
+  margin: 4px 0 0 !important;
+  color: #718078 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0 !important;
+}
+.page-heading--stacked { margin: 0 0 24px !important; }
+@media (max-width: 640px) {
+  .page-heading__title { font-size: 21px !important; }
+  .page-heading__description { font-size: 12px !important; }
+}
+
+/* 首頁保留右側角色標籤，但主副標題沿用全站共用規格 */
+.dash-heading.page-heading { margin-bottom: 24px !important; }
+
+
+/* 強制統一各頁面既有 h1 / p 規則：避免頁面舊 CSS 覆蓋共用標題 */
+html body main .page-heading__title,
+html body .page-heading__title {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #174c35 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+html body main .page-heading__description,
+html body .page-heading__description {
+  display: block !important;
+  margin: 4px 0 0 !important;
+  padding: 0 !important;
+  color: #718078 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* 首頁使用 ID 動態切換角色標題，需比 #dashboardTitle 舊規則更明確 */
+html body #dashboardTitle.page-heading__title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 640px) {
+  html body main .page-heading__title,
+  html body .page-heading__title,
+  html body #dashboardTitle.page-heading__title {
+    font-size: 21px !important;
+  }
+  html body main .page-heading__description,
+  html body .page-heading__description {
+    font-size: 12px !important;
+  }
+}
+
+
+/* 最終統一層：首頁與內頁主標題使用完全相同的字體規格 */
+html body .page-heading__title,
+html body main .page-heading__title,
+html body #dashboardTitle.page-heading__title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+}
+html body .page-heading__description,
+html body main .page-heading__description {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0 !important;
+}
+@media (max-width: 640px) {
+  html body .page-heading__title,
+  html body main .page-heading__title,
+  html body #dashboardTitle.page-heading__title { font-size: 21px !important; }
+  html body .page-heading__description,
+  html body main .page-heading__description { font-size: 12px !important; }
+}
+
+
+/* 首頁、店家管理、員工管理的標題區起始位置統一 */
+body main.dash-main,
+body main.page-heading-layout,
+body main.wrap {
+  padding-top: 36px !important;
+}
+@media (max-width: 800px) {
+  body main.dash-main,
+  body main.page-heading-layout,
+  body main.wrap {
+    padding-top: 24px !important;
+  }
+}

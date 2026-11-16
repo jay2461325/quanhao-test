@@ -1,0 +1,149 @@
+/* 全站共用置頂欄：唯一的 Header 樣式來源
+   字體、大小、粗細全部在此明確指定，不繼承各頁 body 的字體設定。 */
+header.app-header {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 76px !important;
+  margin: 0 0 24px !important;
+  padding: 12px clamp(18px, 3vw, 40px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e6eee8 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 2px 10px rgba(25, 70, 43, .06) !important;
+  color: #244b35 !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-synthesis: none !important;
+  letter-spacing: normal !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+}
+header.app-header .app-header__brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 13px !important;
+  min-width: 0 !important;
+  color: #244b35 !important;
+  text-decoration: none !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+  font-synthesis: none !important;
+}
+header.app-header .app-header__brand img {
+  display: block !important;
+  width: 48px !important;
+  height: 48px !important;
+  flex: 0 0 48px !important;
+  object-fit: contain !important;
+  margin: 0 !important;
+}
+header.app-header .app-header__title {
+  display: block !important;
+  white-space: nowrap !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+  font-synthesis: none !important;
+}
+header.app-header .app-header__actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
+}
+header.app-header .app-header__user:empty {
+  display: none !important;
+}
+header.app-header .app-header__user {
+  color: #52665a !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  font-synthesis: none !important;
+}
+header.app-header .app-header__button {
+  box-sizing: border-box !important;
+  min-height: 38px !important;
+  padding: 8px 17px !important;
+  border: 1px solid #2f754d !important;
+  border-radius: 8px !important;
+  background: #2f754d !important;
+  color: #fff !important;
+  font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  font-synthesis: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+header.app-header .app-header__button:hover {
+  background: #245f3d !important;
+  border-color: #245f3d !important;
+}
+header.app-header .app-header__button--secondary {
+  background: #fff !important;
+  color: #2f754d !important;
+}
+header.app-header .app-header__button--secondary:hover {
+  background: #f1f7f3 !important;
+}
+@media (max-width: 640px) {
+  header.app-header {
+    min-height: 66px !important;
+    padding: 10px 14px !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+  header.app-header .app-header__brand {
+    gap: 8px !important;
+    font-size: 15px !important;
+  }
+  header.app-header .app-header__brand img {
+    width: 38px !important;
+    height: 38px !important;
+    flex-basis: 38px !important;
+  }
+  header.app-header .app-header__title {
+    font-size: 15px !important;
+  }
+  header.app-header .app-header__actions {
+    gap: 7px !important;
+  }
+  header.app-header .app-header__user:empty {
+  display: none !important;
+}
+header.app-header .app-header__user {
+    display: none !important;
+  }
+  header.app-header .app-header__button {
+    min-height: 34px !important;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+  }
+}
+@media print {
+  header.app-header { display: none !important; }
+}

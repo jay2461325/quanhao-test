@@ -1,0 +1,18 @@
+/* 全好蔬果共用資料驗證：Email、台灣手機、台灣市話 */
+(function () {
+"use strict";
+const landlineLengths={"02":[8],"03":[7],"037":[6],"04":[7,8],"049":[7],"05":[7],"06":[7],"07":[7],"08":[7],"0823":[5],"0826":[5],"0836":[5],"089":[6]};
+const areaCodes=Object.keys(landlineLengths).sort((a,b)=>b.length-a.length);
+function validEmail(value){const v=String(value||"").trim();return v.length<=180&&/^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i.test(v);}
+function validMobile(value){const digits=String(value??"").replace(/\D/g,"");return /^09\d{8}$/.test(digits);}
+function normalizeLandline(value){const raw=String(value||"").trim(),digits=raw.replace(/\D/g,"");if(!digits)return "";const code=areaCodes.find(c=>digits.startsWith(c));return code?code+"-"+digits.slice(code.length):raw;}
+function validLandline(value){const m=normalizeLandline(value).match(/^(\d{2,4})-(\d+)$/);return !!m&&!!landlineLengths[m[1]]&&landlineLengths[m[1]].includes(m[2].length);}
+const rules={email:{test:validEmail,label:"Email",error:"請輸入有效的 Email"},mobile:{test:validMobile,label:"手機號碼",error:"請輸入有效的手機號碼（09 開頭，共 10 碼）"},landline:{test:validLandline,label:"市話",error:"請輸入有效的台灣市話（含正確區碼及號碼長度）"},text:{test:v=>String(v||"").trim().length>0,label:"資料",error:"此欄位不可空白"}};
+function errorNode(input){let n=input.parentElement?.querySelector(':scope > .field-validation-error');if(!n){n=document.createElement("div");n.className="field-validation-error";n.setAttribute("aria-live","polite");input.insertAdjacentElement("afterend",n);}return n;}
+function validate(input,show=true){const rule=rules[input.dataset.validate];if(!rule||input.disabled)return true;let value=String(input.value||"").trim();if(input.dataset.validate==="landline"&&value){const normalized=normalizeLandline(value);if(validLandline(normalized))input.value=normalized;value=String(input.value||"").trim();}const required=input.dataset.required==="true"||input.required;const valid=(!value&&!required)||(!!value&&rule.test(value));input.setAttribute("aria-invalid",valid || !show ? "false" : "true");input.classList.toggle("field-invalid",!valid && show);const n=errorNode(input);n.textContent=valid?"":(!value?`請輸入${rule.label}`:rule.error);n.hidden=valid||!show;return valid;}
+function bind(root=document){root.querySelectorAll("[data-validate]").forEach(i=>{if(i.dataset.validationBound==="true")return;i.dataset.validationBound="true";i.addEventListener("input",()=>validate(i,true));i.addEventListener("blur",()=>validate(i,true));validate(i,false);});root.querySelectorAll("form").forEach(f=>{if(f.dataset.validationFormBound==="true")return;f.dataset.validationFormBound="true";f.addEventListener("reset",()=>{setTimeout(()=>f.querySelectorAll("[data-validate]").forEach(i=>validate(i,false)),0);});f.addEventListener("submit",e=>{const bad=[...f.querySelectorAll("[data-validate]")].filter(i=>!validate(i,true));if(bad.length){e.preventDefault();e.stopImmediatePropagation();bad[0].focus();}},true);});}
+window.ChuanHaoValidation={validEmail,validMobile,validLandline,normalizeLandline,validate,bind};
+const style=document.createElement("style");style.textContent=".field-validation-error{color:#d93025;font-size:12px;line-height:1.45;margin-top:5px}.field-invalid{border-color:#d93025!important;box-shadow:0 0 0 1px #d93025!important;outline:none}.field-invalid:focus{border-color:#d93025!important}";document.head.appendChild(style);
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>bind());else bind();
+new MutationObserver(()=>bind()).observe(document.documentElement,{childList:true,subtree:true});
+})();

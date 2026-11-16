@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全好蔬果｜店家操作紀錄</title>
+<style>
+:root{--green:#173f2d;--green2:#24543d;--ink:#203329;--muted:#718078;--line:#e3e9e3;--bg:#f4f6f1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+header{position:sticky;top:0;z-index:1000;height:84px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100% - 1120px)/2))}
+.brand{font-weight:800;color:var(--green);letter-spacing:1px;display:flex;align-items:center;gap:14px;text-decoration:none}.brand img{width:62px;height:62px;object-fit:contain;border-radius:12px}
+.top-actions{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}.top-login-name{font-weight:700;color:var(--green);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button,a.btn{border:1px solid var(--line);border-radius:9px;padding:10px 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:var(--green)}button:disabled{opacity:.55;cursor:not-allowed}.primary{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important}
+main{max-width:1120px;margin:0 auto;padding:36px 22px}.heading{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:22px}.heading h1{margin:0 0 7px;color:var(--green);font-size:28px}.heading p{margin:0;color:var(--muted);font-size:14px}.heading-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:22px;margin-bottom:20px;box-shadow:0 6px 20px #1b392408}.panel h2{font-size:18px;margin:0 0 18px;color:var(--green)}
+.message{display:none;padding:12px 14px;border-radius:9px;background:#edf3ed;color:#31523c;font-size:13px;white-space:pre-wrap;margin:0 0 16px}.message.show{display:block}.message.error{background:#fff0ed;color:#9b392b}
+.filters{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(150px,1fr) minmax(150px,1fr) auto;gap:10px;align-items:end;margin-bottom:16px}.field{width:100%;height:43px;border:1px solid var(--line);border-radius:9px;padding:0 12px;font:inherit;font-size:13px;background:#fbfcfa;color:var(--ink)}.filter label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:0 0 6px}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px}th,td{text-align:left;padding:13px 12px;border-bottom:1px solid #edf0ec;font-size:13px;vertical-align:top}th{color:#607067;background:#f8faf7;font-weight:700;white-space:nowrap}td .sub{color:var(--muted);font-size:12px;margin-top:4px;overflow-wrap:anywhere}.tag{display:inline-block;border-radius:20px;padding:4px 9px;font-size:11px;font-weight:700;background:#edf3ed;color:#315b40;white-space:nowrap}.empty{text-align:center;padding:38px;color:var(--muted)}.summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;color:var(--muted);font-size:12px}.pagination{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:16px}.pagination span{font-size:12px;color:var(--muted);margin-right:auto}.detail{white-space:pre-wrap;overflow-wrap:anywhere;max-width:420px}.note{padding:12px 14px;background:#f8faf7;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;line-height:1.7;margin-top:14px}
+@media(max-width:700px){header{padding:0 14px;gap:8px}.brand{gap:8px;font-size:12px}.brand img{width:48px;height:48px}.top-actions{gap:6px;font-size:11px}.top-login-name{max-width:100px}main{padding:25px 14px}.heading{align-items:flex-start;flex-direction:column}.heading-actions{width:100%}.heading-actions>*{flex:1}.filters{grid-template-columns:1fr 1fr}.filters .filter:first-child{grid-column:1/-1}.panel{padding:15px}}
+</style><style>
+
+/* 全站共用置頂欄位置校正 v2：強制解除各頁舊版 max-width / padding 差異 */
+:root{
+ --site-header-height:72px;
+ --site-header-gutter:5vw;
+ --site-content-width:1120px;
+ --site-brand-size:48px;
+}
+html{scrollbar-gutter:stable}
+body>header,
+body>header.top,
+body>header.dash-top,
+body>header.site-topbar{
+ box-sizing:border-box!important;
+ display:flex!important;
+ position:sticky!important;
+ top:0!important;
+ z-index:1000!important;
+ width:100%!important;
+ max-width:none!important;
+ min-width:0!important;
+ height:var(--site-header-height)!important;
+ min-height:var(--site-header-height)!important;
+ margin:0!important;
+ padding:0 var(--site-header-gutter)!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:16px!important;
+ background:#fff!important;
+ border-bottom:1px solid #e1e8df!important;
+ box-shadow:0 1px 3px rgba(20,55,36,.025)!important;
+}
+body>header .brand,
+body>header .dash-brand,
+body>header .site-topbar-brand{
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ flex:0 1 auto!important;
+ min-width:0!important;
+ gap:12px!important;
+ margin:0!important;
+ padding:0!important;
+ color:#174b35!important;
+ font:800 16px/1.35 system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+ letter-spacing:.4px!important;
+ text-decoration:none!important;
+ white-space:nowrap!important;
+}
+body>header .brand img,
+body>header .dash-brand img,
+body>header .site-topbar-brand img{
+ display:block!important;
+ box-sizing:border-box!important;
+ width:var(--site-brand-size)!important;
+ height:var(--site-brand-size)!important;
+ min-width:var(--site-brand-size)!important;
+ min-height:var(--site-brand-size)!important;
+ max-width:var(--site-brand-size)!important;
+ max-height:var(--site-brand-size)!important;
+ flex:0 0 var(--site-brand-size)!important;
+ object-fit:contain!important;
+ margin:0!important;
+ padding:0!important;
+ border-radius:0!important;
+}
+body>header .actions,
+body>header .top-actions,
+body>header .user,
+body>header .dash-user,
+body>header .site-topbar-actions{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-end!important;
+ flex:0 0 auto!important;
+ gap:12px!important;
+ margin:0!important;
+ padding:0!important;
+ color:#718078!important;
+ font:13px system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+}
+body>header .login-name,
+body>header .top-login-name,
+body>header .user span,
+body>header .dash-user span,
+body>header .site-topbar-actions span{
+ max-width:240px!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+}
+body>header button,
+body>header .btn,
+body>header .logout,
+body>header .plain,
+body>header .site-topbar-logout{
+ box-sizing:border-box!important;
+ min-height:36px!important;
+ height:36px!important;
+ padding:0 14px!important;
+ border:1px solid #e1e8df!important;
+ border-radius:9px!important;
+ background:#fff!important;
+ color:#174b35!important;
+ font:700 13px system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+ line-height:1!important;
+ white-space:nowrap!important;
+}
+body>header button:hover,
+body>header .btn:hover,
+body>header .logout:hover,
+body>header .plain:hover,
+body>header .site-topbar-logout:hover{
+ background:#eaf2eb!important;border-color:#c8d8ca!important;
+}
+@media(max-width:700px){
+ :root{--site-header-height:64px;--site-header-gutter:14px;--site-brand-size:42px}
+ body>header,body>header.top,body>header.dash-top,body>header.site-topbar{
+  gap:8px!important;
+ }
+ body>header .brand,body>header .dash-brand,body>header .site-topbar-brand{
+  gap:7px!important;font-size:12px!important;letter-spacing:0!important;
+ }
+ body>header .actions,body>header .top-actions,body>header .user,
+ body>header .dash-user,body>header .site-topbar-actions{gap:6px!important;font-size:11px!important}
+ body>header .login-name,body>header .top-login-name,
+ body>header .user span,body>header .dash-user span,
+ body>header .site-topbar-actions span{max-width:100px!important}
+ body>header button,body>header .btn,body>header .logout,
+ body>header .plain,body>header .site-topbar-logout{
+  min-height:32px!important;height:32px!important;padding:0 9px!important;font-size:11px!important;
+ }
+}
+
+main,.wrap,#main{width:100%!important;max-width:1120px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;padding-left:22px!important;padding-right:22px!important;}
+</style>
+
+<style>
+
+/* 全站置頂欄文字與定位最終覆寫：統一品牌名稱、登入者與登出按鈕 */
+@media screen{
+  body > header,
+  body > header.top,
+  body > header.site-topbar,
+  body > header.dash-top{
+    box-sizing:border-box!important;
+    display:flex!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    height:72px!important;
+    min-height:72px!important;
+    margin:0!important;
+    padding:0 max(24px,5.35vw)!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    background:#fff!important;
+    border-bottom:1px solid #e1e8df!important;
+    position:sticky!important;
+    top:0!important;
+    z-index:1000!important;
+  }
+  body > header > a.brand,
+  body > header > a.dash-brand,
+  body > header > a.site-topbar-brand{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 1 auto!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.4!important;
+    letter-spacing:.3px!important;
+    text-decoration:none!important;
+    white-space:nowrap!important;
+  }
+  body > header > a.brand img,
+  body > header > a.dash-brand img,
+  body > header > a.site-topbar-brand img{
+    display:block!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    height:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    margin:0!important;
+    padding:0!important;
+    object-fit:contain!important;
+  }
+  body > header > a.brand span,
+  body > header > a.dash-brand span,
+  body > header > a.site-topbar-brand span{
+    display:inline-block!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.4!important;
+    letter-spacing:.3px!important;
+    white-space:nowrap!important;
+  }
+  body > header > div.actions,
+  body > header > div.top-actions,
+  body > header > div.user,
+  body > header > div.dash-user,
+  body > header > div.site-topbar-actions{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:12px!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body > header > div.actions > span,
+  body > header > div.top-actions > span,
+  body > header > div.user > span,
+  body > header > div.dash-user > span,
+  body > header > div.site-topbar-actions > span{
+    display:inline-block!important;
+    max-width:240px!important;
+    margin:0!important;
+    padding:0!important;
+    color:#718078!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:13px!important;
+    font-weight:500!important;
+    line-height:1.4!important;
+    letter-spacing:0!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body > header > div button,
+  body > header > div .btn,
+  body > header > div .plain,
+  body > header > div .logout,
+  body > header > div .site-topbar-logout{
+    box-sizing:border-box!important;
+    display:inline-flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:36px!important;
+    min-height:36px!important;
+    margin:0!important;
+    padding:0 14px!important;
+    border:1px solid #dce5dc!important;
+    border-radius:9px!important;
+    background:#fff!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:13px!important;
+    font-weight:700!important;
+    line-height:1!important;
+    letter-spacing:0!important;
+    white-space:nowrap!important;
+  }
+  body > header > div button:hover,
+  body > header > div .btn:hover,
+  body > header > div .plain:hover,
+  body > header > div .logout:hover,
+  body > header > div .site-topbar-logout:hover{
+    background:#eaf2eb!important;
+  }
+}
+@media screen and (max-width:700px){
+  body > header,
+  body > header.top,
+  body > header.site-topbar,
+  body > header.dash-top{
+    height:64px!important;min-height:64px!important;
+    padding:0 14px!important;gap:8px!important;
+  }
+  body > header > a.brand,
+  body > header > a.dash-brand,
+  body > header > a.site-topbar-brand{gap:8px!important;font-size:13px!important}
+  body > header > a.brand img,
+  body > header > a.dash-brand img,
+  body > header > a.site-topbar-brand img{
+    flex-basis:42px!important;width:42px!important;height:42px!important;
+    min-width:42px!important;max-width:42px!important;
+  }
+  body > header > a.brand span,
+  body > header > a.dash-brand span,
+  body > header > a.site-topbar-brand span{font-size:13px!important}
+  body > header > div.actions,
+  body > header > div.top-actions,
+  body > header > div.user,
+  body > header > div.dash-user,
+  body > header > div.site-topbar-actions{gap:7px!important}
+  body > header > div.actions > span,
+  body > header > div.top-actions > span,
+  body > header > div.user > span,
+  body > header > div.dash-user > span,
+  body > header > div.site-topbar-actions > span{max-width:100px!important;font-size:11px!important}
+  body > header > div button,
+  body > header > div .btn,
+  body > header > div .plain,
+  body > header > div .logout,
+  body > header > div .site-topbar-logout{
+    height:32px!important;min-height:32px!important;padding:0 9px!important;font-size:11px!important;
+  }
+}
+
+</style>
+  <link rel="stylesheet" href="assets/header.css">
+  <link rel="stylesheet" href="assets/page-heading.css">
+</head>
+<body>
+<header class="app-header" data-title="全好蔬果｜店家操作紀錄" data-user-id="topLoginName" data-logout-id="logout"></header>
+<script src="assets/header.js"></script>
+<main>
+ <div class="heading page-heading"><div><h1 class="page-heading__title">店家操作紀錄</h1><p class="page-heading__description">查看店家資料及店家聯絡人帳號相關的操作稽核紀錄。</p></div><div class="heading-actions"><a class="btn" href="stores.html">返回店家管理</a><button class="primary" id="refresh">重新整理</button></div></div>
+ <div class="message" id="message" role="status" aria-live="polite"></div>
+ <section class="panel"><h2>操作紀錄列表</h2>
+  <div class="filters">
+   <div class="filter"><label for="search">關鍵字搜尋</label><input class="field" id="search" type="search" placeholder="搜尋操作人、店家、操作內容或紀錄 ID"></div>
+   <div class="filter"><label for="fromDate">開始日期</label><input class="field" id="fromDate" type="date"></div>
+   <div class="filter"><label for="toDate">結束日期</label><input class="field" id="toDate" type="date"></div>
+   <button id="clear">清除條件</button>
+  </div>
+  <div class="summary"><span id="count">載入中…</span><span>依操作時間由新到舊</span></div>
+  <div class="tablewrap"><table><thead><tr><th>操作時間</th><th>操作人員</th><th>操作項目</th><th>店家／對象</th><th>操作內容</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">正在讀取操作紀錄…</td></tr></tbody></table></div>
+  <div class="pagination"><span id="pageInfo"></span><button id="prev">上一頁</button><button id="next">下一頁</button></div>
+  <div class="note">此頁讀取 Supabase 的 <b>audit_logs</b> 稽核資料，僅呈現與店家或店家聯絡人相關的紀錄。若列表沒有資料，可能代表目前尚未有相關稽核紀錄，或現有店家管理頁的新增／修改／停用操作尚未寫入 audit_logs；不會自行補造歷史紀錄。</div>
+ </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://aiojcpfahyooveqthhwy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_SW-Ji-Co-5cUBe1b5K0Grw_lm9WO8Je";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);let allRows=[],page=1;const pageSize=30;
+const STORE_TABLES=new Set(['stores','store_accounts','customer_store_accounts','store_contacts','customer_contacts','customer_accounts']);
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showMessage(t,error=false){$('message').textContent=t;$('message').className='message show'+(error?' error':'')}
+function getDetails(row){return row.details&&typeof row.details==='object'?row.details:{}}
+function isStoreLog(row){const table=String(row.table_name||'').toLowerCase();const action=String(row.action||'').toLowerCase();const d=getDetails(row);const summary=String(d.summary||'').toLowerCase();return STORE_TABLES.has(table)||table.includes('store')||table.includes('customer')||action.includes('store')||action.includes('customer')||summary.includes('店家')||summary.includes('聯絡人')}
+function dateText(v){if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleString('zh-TW',{hour12:false})}
+function actionText(v){const map={store_created:'建立店家',store_updated:'修改店家',store_enabled:'啟用店家',store_disabled:'停用店家',store_deleted:'刪除店家',customer_contact_created:'新增店家聯絡人',customer_contact_updated:'修改店家聯絡人',customer_contact_enabled:'啟用店家聯絡人',customer_contact_disabled:'停用店家聯絡人',customer_contact_permanently_deleted:'永久刪除店家聯絡人'};return map[v]||v||'未提供'}
+function rowTarget(row){const d=getDetails(row);return d.store_name||d.customer_store_name||d.contact_name||d.deleted_contact_name||d.employee_name||d.summary||row.record_id||'—'}
+function rowSummary(row){const d=getDetails(row);return d.summary||d.description||d.note||Object.entries(d).filter(([k])=>!['summary','store_name','contact_name','email','phone'].includes(k)).map(([k,v])=>`${k}：${typeof v==='object'?JSON.stringify(v):v}`).join('\n')||'—'}
+function filtered(){const q=$('search').value.trim().toLowerCase(),from=$('fromDate').value,to=$('toDate').value;return allRows.filter(r=>{const d=getDetails(r);const hay=[r.action,r.table_name,r.record_id,r.user_name,d.summary,d.store_name,d.customer_store_name,d.contact_name,d.deleted_contact_name,d.employee_name,d.email,d.phone].join(' ').toLowerCase();if(q&&!hay.includes(q))return false;const stamp=new Date(r.created_at||0);if(from&&stamp<new Date(from+'T00:00:00'))return false;if(to&&stamp>new Date(to+'T23:59:59'))return false;return true})}
+function render(){const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages);const start=(page-1)*pageSize,shown=rows.slice(start,start+pageSize);$('count').textContent=`共 ${rows.length} 筆相關紀錄`;$('pageInfo').textContent=`第 ${page} / ${pages} 頁`;$('prev').disabled=page<=1;$('next').disabled=page>=pages;if(!shown.length){$('rows').innerHTML='<tr><td colspan="5" class="empty">目前沒有符合條件的店家操作紀錄</td></tr>';return}$('rows').innerHTML=shown.map(r=>{const d=getDetails(r);const operator=r.operator_name||r.user_name||r.profiles?.display_name||r.user_id||'未知';return `<tr><td>${esc(dateText(r.created_at))}</td><td>${esc(operator)}</td><td><span class="tag">${esc(actionText(r.action))}</span><div class="sub">${esc(r.table_name||'')}</div></td><td>${esc(rowTarget(r))}<div class="sub">${esc(r.record_id||'')}</div></td><td><div class="detail">${esc(rowSummary(r))}</div></td></tr>`}).join('')}
+async function load(){ $('rows').innerHTML='<tr><td colspan="5" class="empty">正在讀取操作紀錄…</td></tr>';try{const {data,error}=await db.from('audit_logs').select('*').order('created_at',{ascending:false}).limit(1500);if(error)throw error;const logs=(data||[]).filter(isStoreLog);const ids=[...new Set(logs.map(x=>x.user_id).filter(Boolean))];let names={};if(ids.length){const {data:profiles,error:profileError}=await db.from('profiles').select('id,display_name').in('id',ids);if(!profileError)(profiles||[]).forEach(p=>names[p.id]=p.display_name)}allRows=logs.map(x=>({...x,operator_name:names[x.user_id]||''}));page=1;render();}catch(e){$('rows').innerHTML='<tr><td colspan="5" class="empty">無法讀取操作紀錄</td></tr>';showMessage('讀取店家操作紀錄失敗：'+(e.message||'未知錯誤'),true)}}
+async function init(){const {data:{session}}=await db.auth.getSession();if(!session){location.replace('index.html');return}const {data:p,error}=await db.from('profiles').select('role,display_name,is_active,deleted_at').eq('id',session.user.id).single();if(error||p?.role!=='admin'||p.is_active===false||p.deleted_at){alert('此功能僅限有效的管理者帳號使用。');location.replace('index.html');return}$('topLoginName').textContent=p.display_name||session.user.email||'管理者';await load()}
+$('refresh').onclick=load;$('search').addEventListener('input',()=>{page=1;render()});$('fromDate').onchange=()=>{page=1;render()};$('toDate').onchange=()=>{page=1;render()};$('clear').onclick=()=>{$('search').value='';$('fromDate').value='';$('toDate').value='';page=1;render()};$('prev').onclick=()=>{if(page>1){page--;render()}};$('next').onclick=()=>{page++;render()};$('logout').onclick=async()=>{await db.auth.signOut();location.replace('index.html')};init();
+</script></body></html>

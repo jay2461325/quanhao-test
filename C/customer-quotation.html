@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全好蔬果｜報價單明細</title><link rel="icon" href="assets/logo.png">
+<style>
+:root{--g:#174b35;--bg:#f4f6f1;--line:#e1e8df;--muted:#718078}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#26382d;font-family:Arial,"Noto Sans TC",sans-serif}
+.top{min-height:84px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:12px max(24px,5vw);gap:12px}
+.brand{display:flex;align-items:center;gap:14px;color:var(--g);font-weight:800;text-decoration:none;letter-spacing:1px}.brand img{width:62px;height:62px;object-fit:contain;border-radius:12px}
+.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+button{border:1px solid #d5dfd5;background:#fff;color:var(--g);border-radius:8px;padding:9px 14px;font:inherit;cursor:pointer}
+button.primary{background:var(--g);color:#fff}
+main{max-width:1000px;margin:0 auto;padding:36px 24px}
+h1{font-size:26px;color:var(--g);margin:0 0 18px}
+.panel{position:relative;isolation:isolate;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:15px;padding:22px;box-shadow:0 7px 22px #19372508}
+.panel::before{content:"";display:none;position:absolute;z-index:0;pointer-events:none}
+.panel>*{position:relative;z-index:1}
+.head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 22px;font-size:14px;color:#53645a;margin:18px 0}
+.meta b{color:#26382d}.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{padding:13px 12px;border-bottom:1px solid #edf0eb;text-align:center;vertical-align:middle;font-size:14px}
+th{background:#f1f5ef;color:#45604c}
+.total{display:flex;justify-content:flex-end;gap:36px;background:#e9eddf;padding:14px 18px;margin-top:16px;font-weight:800}
+.notice{padding:14px 16px;border-radius:9px;background:#fff4e8;color:#81551f;font-size:14px;line-height:1.7}
+.hidden{display:none!important}
+@media(max-width:650px){.top{padding:12px 14px}.brand span{font-size:13px}.brand img{width:48px;height:48px}main{padding:26px 14px}.panel{padding:15px}.meta{grid-template-columns:1fr}}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .top,.no-print,h1{display:none!important}
+  main{max-width:none;margin:0;padding:0}
+  .panel{
+    border:0;box-shadow:none;padding:0;
+    min-height:780px;overflow:visible;
+  }
+  .panel::before{
+    content:"";display:block;
+    position:fixed;left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    width:430px;height:430px;
+    background:url("assets/logo.png") center center/contain no-repeat;
+    opacity:.12;
+    pointer-events:none;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  table{min-width:0}
+  th,td{border:1px solid #bbb!important}
+  .total{print-color-adjust:exact}
+}
+
+/* 全站一致的返回首頁圖示 */
+.home-icon{width:16px;height:16px;display:inline-block;vertical-align:-3px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.site-topbar-home,.home-link{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+/* 全站資料處理遮罩與動態進度條 */
+.global-busy-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(13,29,20,.42);align-items:center;justify-content:center;padding:20px}
+.global-busy-overlay.show{display:flex}
+.global-busy-card{width:min(100%,390px);background:#fff;border:1px solid #e4e9e4;border-radius:16px;padding:26px 24px;box-shadow:0 18px 60px #0003;text-align:center;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+.global-busy-spinner{width:38px;height:38px;margin:0 auto 14px;border:4px solid #e4eee6;border-top-color:#173f2d;border-radius:50%;animation:global-busy-spin .8s linear infinite}
+.global-busy-title{font-weight:800;color:#173f2d;font-size:17px;margin-bottom:7px}
+.global-busy-text{font-size:13px;color:#718078;margin-bottom:17px}
+.global-busy-track{height:7px;background:#e9efe9;border-radius:99px;overflow:hidden}
+.global-busy-bar{height:100%;width:38%;background:linear-gradient(90deg,#24543d,#70a77f,#24543d);border-radius:99px;animation:global-busy-run 1.25s ease-in-out infinite}
+@keyframes global-busy-spin{to{transform:rotate(360deg)}}
+@keyframes global-busy-run{0%{transform:translateX(-115%)}100%{transform:translateX(290%)}}
+@media(prefers-reduced-motion:reduce){.global-busy-spinner,.global-busy-bar{animation:none}.global-busy-bar{width:100%;transform:none}}
+@media print{.global-busy-overlay{display:none!important}}
+
+
+.global-busy-title.busy-dots::after{content:'';display:inline-block;width:1.5em;text-align:left;animation:global-busy-dots 1.25s steps(4,end) infinite}
+@keyframes global-busy-dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%,100%{content:'...'}}
+
+/* 使用者要求：不顯示全畫面資料載入遮罩 */
+.global-busy-overlay, #busyOverlay { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+</style>
+<style>
+
+/* 全站共用置頂欄位置校正 v2：強制解除各頁舊版 max-width / padding 差異 */
+:root{
+ --site-header-height:72px;
+ --site-header-gutter:5vw;
+ --site-content-width:1120px;
+ --site-brand-size:48px;
+}
+html{scrollbar-gutter:stable}
+body>header,
+body>header.top,
+body>header.dash-top,
+body>header.site-topbar{
+ box-sizing:border-box!important;
+ display:flex!important;
+ position:sticky!important;
+ top:0!important;
+ z-index:1000!important;
+ width:100%!important;
+ max-width:none!important;
+ min-width:0!important;
+ height:var(--site-header-height)!important;
+ min-height:var(--site-header-height)!important;
+ margin:0!important;
+ padding:0 var(--site-header-gutter)!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:16px!important;
+ background:#fff!important;
+ border-bottom:1px solid #e1e8df!important;
+ box-shadow:0 1px 3px rgba(20,55,36,.025)!important;
+}
+body>header .brand,
+body>header .dash-brand,
+body>header .site-topbar-brand{
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ flex:0 1 auto!important;
+ min-width:0!important;
+ gap:12px!important;
+ margin:0!important;
+ padding:0!important;
+ color:#174b35!important;
+ font:800 16px/1.35 system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+ letter-spacing:.4px!important;
+ text-decoration:none!important;
+ white-space:nowrap!important;
+}
+body>header .brand img,
+body>header .dash-brand img,
+body>header .site-topbar-brand img{
+ display:block!important;
+ box-sizing:border-box!important;
+ width:var(--site-brand-size)!important;
+ height:var(--site-brand-size)!important;
+ min-width:var(--site-brand-size)!important;
+ min-height:var(--site-brand-size)!important;
+ max-width:var(--site-brand-size)!important;
+ max-height:var(--site-brand-size)!important;
+ flex:0 0 var(--site-brand-size)!important;
+ object-fit:contain!important;
+ margin:0!important;
+ padding:0!important;
+ border-radius:0!important;
+}
+body>header .actions,
+body>header .top-actions,
+body>header .user,
+body>header .dash-user,
+body>header .site-topbar-actions{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-end!important;
+ flex:0 0 auto!important;
+ gap:12px!important;
+ margin:0!important;
+ padding:0!important;
+ color:#718078!important;
+ font:13px system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+}
+body>header .login-name,
+body>header .top-login-name,
+body>header .user span,
+body>header .dash-user span,
+body>header .site-topbar-actions span{
+ max-width:240px!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+}
+body>header button,
+body>header .btn,
+body>header .logout,
+body>header .plain,
+body>header .site-topbar-logout{
+ box-sizing:border-box!important;
+ min-height:36px!important;
+ height:36px!important;
+ padding:0 14px!important;
+ border:1px solid #e1e8df!important;
+ border-radius:9px!important;
+ background:#fff!important;
+ color:#174b35!important;
+ font:700 13px system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+ line-height:1!important;
+ white-space:nowrap!important;
+}
+body>header button:hover,
+body>header .btn:hover,
+body>header .logout:hover,
+body>header .plain:hover,
+body>header .site-topbar-logout:hover{
+ background:#eaf2eb!important;border-color:#c8d8ca!important;
+}
+@media(max-width:700px){
+ :root{--site-header-height:64px;--site-header-gutter:14px;--site-brand-size:42px}
+ body>header,body>header.top,body>header.dash-top,body>header.site-topbar{
+  gap:8px!important;
+ }
+ body>header .brand,body>header .dash-brand,body>header .site-topbar-brand{
+  gap:7px!important;font-size:12px!important;letter-spacing:0!important;
+ }
+ body>header .actions,body>header .top-actions,body>header .user,
+ body>header .dash-user,body>header .site-topbar-actions{gap:6px!important;font-size:11px!important}
+ body>header .login-name,body>header .top-login-name,
+ body>header .user span,body>header .dash-user span,
+ body>header .site-topbar-actions span{max-width:100px!important}
+ body>header button,body>header .btn,body>header .logout,
+ body>header .plain,body>header .site-topbar-logout{
+  min-height:32px!important;height:32px!important;padding:0 9px!important;font-size:11px!important;
+ }
+}
+
+main{width:100%!important;max-width:1120px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;padding-left:22px!important;padding-right:22px!important;}
+</style>
+
+<style>
+
+/* 全站置頂欄文字與定位最終覆寫：統一品牌名稱、登入者與登出按鈕 */
+@media screen{
+  body > header,
+  body > header.top,
+  body > header.site-topbar,
+  body > header.dash-top{
+    box-sizing:border-box!important;
+    display:flex!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    height:72px!important;
+    min-height:72px!important;
+    margin:0!important;
+    padding:0 max(24px,5.35vw)!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    background:#fff!important;
+    border-bottom:1px solid #e1e8df!important;
+    position:sticky!important;
+    top:0!important;
+    z-index:1000!important;
+  }
+  body > header > a.brand,
+  body > header > a.dash-brand,
+  body > header > a.site-topbar-brand{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 1 auto!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.4!important;
+    letter-spacing:.3px!important;
+    text-decoration:none!important;
+    white-space:nowrap!important;
+  }
+  body > header > a.brand img,
+  body > header > a.dash-brand img,
+  body > header > a.site-topbar-brand img{
+    display:block!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    height:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    margin:0!important;
+    padding:0!important;
+    object-fit:contain!important;
+  }
+  body > header > a.brand span,
+  body > header > a.dash-brand span,
+  body > header > a.site-topbar-brand span{
+    display:inline-block!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.4!important;
+    letter-spacing:.3px!important;
+    white-space:nowrap!important;
+  }
+  body > header > div.actions,
+  body > header > div.top-actions,
+  body > header > div.user,
+  body > header > div.dash-user,
+  body > header > div.site-topbar-actions{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:12px!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body > header > div.actions > span,
+  body > header > div.top-actions > span,
+  body > header > div.user > span,
+  body > header > div.dash-user > span,
+  body > header > div.site-topbar-actions > span{
+    display:inline-block!important;
+    max-width:240px!important;
+    margin:0!important;
+    padding:0!important;
+    color:#718078!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:13px!important;
+    font-weight:500!important;
+    line-height:1.4!important;
+    letter-spacing:0!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body > header > div button,
+  body > header > div .btn,
+  body > header > div .plain,
+  body > header > div .logout,
+  body > header > div .site-topbar-logout{
+    box-sizing:border-box!important;
+    display:inline-flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:36px!important;
+    min-height:36px!important;
+    margin:0!important;
+    padding:0 14px!important;
+    border:1px solid #dce5dc!important;
+    border-radius:9px!important;
+    background:#fff!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:13px!important;
+    font-weight:700!important;
+    line-height:1!important;
+    letter-spacing:0!important;
+    white-space:nowrap!important;
+  }
+  body > header > div button:hover,
+  body > header > div .btn:hover,
+  body > header > div .plain:hover,
+  body > header > div .logout:hover,
+  body > header > div .site-topbar-logout:hover{
+    background:#eaf2eb!important;
+  }
+}
+@media screen and (max-width:700px){
+  body > header,
+  body > header.top,
+  body > header.site-topbar,
+  body > header.dash-top{
+    height:64px!important;min-height:64px!important;
+    padding:0 14px!important;gap:8px!important;
+  }
+  body > header > a.brand,
+  body > header > a.dash-brand,
+  body > header > a.site-topbar-brand{gap:8px!important;font-size:13px!important}
+  body > header > a.brand img,
+  body > header > a.dash-brand img,
+  body > header > a.site-topbar-brand img{
+    flex-basis:42px!important;width:42px!important;height:42px!important;
+    min-width:42px!important;max-width:42px!important;
+  }
+  body > header > a.brand span,
+  body > header > a.dash-brand span,
+  body > header > a.site-topbar-brand span{font-size:13px!important}
+  body > header > div.actions,
+  body > header > div.top-actions,
+  body > header > div.user,
+  body > header > div.dash-user,
+  body > header > div.site-topbar-actions{gap:7px!important}
+  body > header > div.actions > span,
+  body > header > div.top-actions > span,
+  body > header > div.user > span,
+  body > header > div.dash-user > span,
+  body > header > div.site-topbar-actions > span{max-width:100px!important;font-size:11px!important}
+  body > header > div button,
+  body > header > div .btn,
+  body > header > div .plain,
+  body > header > div .logout,
+  body > header > div .site-topbar-logout{
+    height:32px!important;min-height:32px!important;padding:0 9px!important;font-size:11px!important;
+  }
+}
+
+</style>
+  <link rel="stylesheet" href="assets/header.css">
+  <link rel="stylesheet" href="assets/page-heading.css">
+</head>
+<body>
+<header class="app-header" data-title="全好蔬果｜報價管理系統" data-user-id="storeLabel" data-logout-id="logout" data-back-id="back" data-back-label="返回報價列表"></header>
+<script src="assets/header.js"></script>
+<main>
+  <section class="page-heading page-heading--stacked"><h1 class="page-heading__title">報價單明細</h1></section>
+  <div id="notice" class="notice">正在確認帳號及報價權限…</div>
+  <section id="detail" class="panel hidden">
+    <div class="head"><strong>報價內容</strong><button class="primary no-print" id="print">列印／另存 PDF</button></div>
+    <div class="meta">
+      <div>報價編號：<b id="no"></b></div><div>日期：<b id="date"></b></div>
+      <div>店家：<b id="store"></b></div><div>聯絡人：<b id="contact"></b></div>
+      <div>電話：<b id="phone"></b></div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>項次</th><th>項目</th><th>單位</th><th>數量</th><th>單價</th><th>金額</th><th>備註</th></tr></thead><tbody id="items"></tbody></table></div>
+    <div class="total"><span>總計</span><span id="sum"></span></div>
+  </section>
+</main>
+<div class="global-busy-overlay" id="globalBusyOverlay" role="status" aria-live="polite" aria-hidden="true"><section class="global-busy-card"><div class="global-busy-spinner" aria-hidden="true"></div><div class="global-busy-title">正在處理，請稍候…</div><div class="global-busy-text">系統正在讀取或更新資料，請稍候，請勿重複操作。</div><div class="global-busy-track" aria-hidden="true"><div class="global-busy-bar"></div></div></section></div>
+<script>
+/* 全站統一 Loading：初始載入、頁面切換、資料讀取、儲存與刪除 */
+(function(){
+  const overlay = document.getElementById('globalBusyOverlay') || document.getElementById('busyOverlay');
+  if (!overlay || window.__globalBusyControllerInstalled) return;
+  window.__globalBusyControllerInstalled = true;
+
+  const title = overlay.querySelector('.global-busy-title') || overlay.querySelector('#busyTitle');
+  const detail = overlay.querySelector('.global-busy-text') || overlay.querySelector('#busyText');
+  let active = 0, pendingInitial = 0, pageLoaded = false, showTimer = null, hideTimer = null;
+  let currentKind = 'load';
+
+  function setText(kind){
+    currentKind = kind;
+    if(title){
+      title.classList.toggle('busy-dots', kind === 'save' || kind === 'load' || kind === 'delete');
+      title.textContent = ({
+        load:'資料載入中', save:'儲存中', delete:'刪除中'
+      })[kind] || '資料處理中';
+    }
+    if(detail){
+      detail.textContent = ({
+        load:'正在讀取資料，請稍候…',
+        save:'正在儲存資料，請稍候，請勿重複操作。',
+        delete:'正在安全刪除資料，請稍候，請勿重複操作。',
+        switch:'正在準備頁面內容，請稍候…'
+      })[kind] || '系統正在處理資料，請稍候…';
+    }
+  }
+  function show(kind){
+    if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    setText(kind);
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+  }
+  function hide(){
+    if(active > 0 || !pageLoaded) return;
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+  }
+
+  // 不因頁面初始載入或頁面切換顯示全頁遮罩；僅在實際資料請求時顯示。
+  window.addEventListener('load', function(){
+    pageLoaded = true;
+    if(active === 0) setTimeout(hide, 180);
+  }, {once:true});
+const nativeFetch = window.fetch.bind(window);
+  window.fetch = function(input, init){
+    const raw = typeof input === 'string' ? input : (input && input.url) || '';
+    const tracked = !window.__suppressGlobalBusy &&
+      (/supabase\.co|workers\.dev/i.test(raw));
+    if(!tracked) return nativeFetch(input, init);
+
+    const method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    const destructive = method === 'DELETE' || /delete|remove|hard-delete/i.test(raw);
+    const writing = ['POST','PUT','PATCH'].includes(method);
+    const kind = destructive ? 'delete' : writing ? 'save' : 'load';
+
+    active++;
+    pendingInitial++;
+    if(showTimer) clearTimeout(showTimer);
+    if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    // 顯示延遲避免極短請求造成閃爍；頁面初始 Loading 已經顯示
+    showTimer = setTimeout(()=>show(kind), 100);
+
+    let request;
+    try{request = nativeFetch(input, init);}
+    catch(error){finish();throw error;}
+    return request.finally(finish);
+  };
+
+  function finish(){
+    active = Math.max(0, active - 1);
+    pendingInitial = Math.max(0, pendingInitial - 1);
+    if(active === 0){
+      if(showTimer){clearTimeout(showTimer);showTimer=null;}
+      hideTimer = setTimeout(hide, 220);
+    }
+  }
+
+  // 提供頁面程式可共用的手動控制介面
+  window.showGlobalLoading = function(kind='load'){show(kind);};
+  window.hideGlobalLoading = function(){if(active===0){pageLoaded=true;hide();}};
+})();
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const db=window.supabase.createClient("https://aiojcpfahyooveqthhwy.supabase.co","sb_publishable_SW-Ji-Co-5cUBe1b5K0Grw_lm9WO8Je");
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString("zh-TW",{maximumFractionDigits:2});
+let currentUser=null,ctx=null,statusTimer=null,statusChannel=null,statusChecking=false;
+const quoteId=new URLSearchParams(location.search).get('id');
+
+function showNotice(message){$('notice').textContent=message;$('notice').classList.remove('hidden');$('detail').classList.add('hidden')}
+async function hasCustomerAccess(){
+  if(!currentUser||!ctx)return false;
+  const {data:b,error}=await db.from('customer_store_accounts').select('store_id,is_active').eq('user_id',currentUser.id).maybeSingle();
+  if(error||!b||b.is_active!==true||b.store_id!==ctx.storeId)return false;
+  const {data:allowed,error:rpcError}=await db.rpc('is_customer_of_store',{p_store_id:ctx.storeId});
+  return !rpcError&&allowed===true;
+}
+function stopStatusMonitor(){
+  if(statusTimer)clearInterval(statusTimer);statusTimer=null;
+  if(statusChannel)db.removeChannel(statusChannel);statusChannel=null;
+  document.removeEventListener('visibilitychange',checkCustomerStatus);
+}
+async function forceCustomerLogout(){
+  stopStatusMonitor();ctx=null;await db.auth.signOut();
+  showNotice('店家帳號或店家已停用，系統已登出。即將返回登入頁。');
+  setTimeout(()=>location.href='index.html',1800);
+}
+async function checkCustomerStatus(){
+  if(statusChecking||document.hidden||!ctx)return;
+  statusChecking=true;
+  try{if(!(await hasCustomerAccess()))await forceCustomerLogout();}
+  finally{statusChecking=false;}
+}
+function startStatusMonitor(){
+  stopStatusMonitor();
+  statusChannel=db.channel('customer-detail-access-'+currentUser.id)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'stores'},checkCustomerStatus)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'customer_store_accounts',filter:'user_id=eq.'+currentUser.id},checkCustomerStatus)
+    .subscribe();
+  statusTimer=setInterval(checkCustomerStatus,10000);
+  document.addEventListener('visibilitychange',checkCustomerStatus);
+}
+async function init(){
+  if(!quoteId){showNotice('缺少報價單編號，請返回報價列表。');return;}
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){location.href='index.html';return;}
+  currentUser=session.user;
+  const {data:p,error:pe}=await db.from('profiles').select('role').eq('id',currentUser.id).single();
+  if(pe||p.role!=='customer'){showNotice('此頁僅供店家帳號使用。');return;}
+  const {data:b,error:be}=await db.from('customer_store_accounts').select('store_id,is_active,stores(name)').eq('user_id',currentUser.id).maybeSingle();
+  if(be)throw be;
+  if(!b?.store_id||b.is_active!==true){await forceCustomerLogout();return;}
+  ctx={storeId:b.store_id,storeName:b.stores?.name||''};
+  if(!(await hasCustomerAccess())){await forceCustomerLogout();return;}
+  $('storeLabel').textContent=ctx.storeName;
+  // Explicitly scope the quote to the authenticated customer's bound store.
+  // RLS remains the authoritative database-side protection.
+  const {data:q,error:qe}=await db.from('quotations')
+    .select('id,quotation_no,quotation_date,store_id,store_name,contact_name,phone,total_amount')
+    .eq('id',quoteId).eq('store_id',ctx.storeId).is('deleted_at',null).maybeSingle();
+  if(qe)throw qe;
+  if(!q){showNotice('無法查看此報價單：報價不存在或您沒有查看權限。');startStatusMonitor();return;}
+  const {data:items,error:ie}=await db.from('quotation_items')
+    .select('item_name,unit,quantity,unit_price,amount,item_note,sort_order')
+    .eq('quotation_id',quoteId).order('sort_order');
+  if(ie)throw ie;
+  $('no').textContent=q.quotation_no||'';$('date').textContent=q.quotation_date||'';
+  $('store').textContent=q.store_name||ctx.storeName;$('contact').textContent=q.contact_name||'';
+  $('phone').textContent=q.phone||'';$('sum').textContent=money(q.total_amount);
+  const body=$('items');body.innerHTML='';
+  (items||[]).forEach((it,i)=>{
+    const tr=document.createElement('tr');
+    [i+1,it.item_name,it.unit,it.quantity,money(it.unit_price),money(it.amount),it.item_note||''].forEach((v,j)=>{
+      const td=document.createElement('td');td.textContent=v??'';
+      td.style.textAlign='center';td.style.verticalAlign='middle';tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+  $('notice').classList.add('hidden');$('detail').classList.remove('hidden');startStatusMonitor();
+}
+$('back').onclick=()=>location.href='customer.html';
+
+$('logout').onclick=async()=>{stopStatusMonitor();await db.auth.signOut();location.href='index.html';};
+$('print').onclick=()=>window.print();
+init().catch(e=>showNotice(e.message||'初始化失敗，請重新登入。'));
+</script>
+</body></html>

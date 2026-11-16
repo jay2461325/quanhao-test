@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全好蔬果｜員工操作紀錄</title>
+<style>
+:root{--green:#173f2d;--ink:#203329;--muted:#718078;--line:#e3e9e3;--bg:#f4f6f1}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+header{position:sticky;top:0;z-index:1000;height:84px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100% - 1180px)/2))}.brand{font-weight:800;color:var(--green);display:flex;align-items:center;gap:14px;letter-spacing:1px;text-decoration:none}.brand img{width:62px;height:62px;object-fit:contain;border-radius:12px}.top-actions{display:flex;gap:9px;align-items:center;color:var(--muted);font-size:13px}.top-login-name{font-weight:700;color:var(--green);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button,a.btn{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.primary{background:var(--green);color:#fff}.secondary{background:#edf3ed;color:var(--green)}.plain{background:#fff;border:1px solid var(--line);color:var(--green)}
+main{max-width:1180px;margin:0 auto;padding:34px 22px}.heading{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:22px}.heading h1{margin:0 0 7px;color:var(--green);font-size:27px}.heading p{margin:0;color:var(--muted);font-size:14px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 6px 20px #1b392408}.filters{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}label{display:block;font-size:12px;font-weight:700;color:#526357;margin-bottom:6px}input,select{width:100%;height:41px;border:1px solid var(--line);border-radius:8px;padding:0 10px;font:inherit;background:#fff;color:var(--ink)}
+.message{display:none;padding:12px 14px;border-radius:9px;background:#edf3ed;color:#31523c;font-size:13px;margin:0 0 16px}.message.show{display:block}.message.error{background:#fff0ed;color:#9b392b}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0ec;font-size:13px;vertical-align:top}th{color:#65756a;background:#fafbf9}.empty{text-align:center;color:#849087;padding:32px}.muted{color:var(--muted);font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf3ed;color:#31523c;font-size:11px;font-weight:700}
+@media(max-width:760px){header{padding:0 14px;gap:8px}.brand img{width:48px;height:48px}.top-actions{gap:6px;font-size:11px}.top-login-name{max-width:100px}main{padding:22px 14px}.heading{align-items:start;flex-direction:column}.filters{grid-template-columns:1fr 1fr}}@media(max-width:440px){.filters{grid-template-columns:1fr}}
+
+/* 全站一致的返回首頁圖示 */
+.home-icon{width:16px;height:16px;display:inline-block;vertical-align:-3px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.site-topbar-home,.home-link{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+/* 全站資料處理遮罩與動態進度條 */
+.global-busy-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(13,29,20,.42);align-items:center;justify-content:center;padding:20px}
+.global-busy-overlay.show{display:flex}
+.global-busy-card{width:min(100%,390px);background:#fff;border:1px solid #e4e9e4;border-radius:16px;padding:26px 24px;box-shadow:0 18px 60px #0003;text-align:center;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+.global-busy-spinner{width:38px;height:38px;margin:0 auto 14px;border:4px solid #e4eee6;border-top-color:#173f2d;border-radius:50%;animation:global-busy-spin .8s linear infinite}
+.global-busy-title{font-weight:800;color:#173f2d;font-size:17px;margin-bottom:7px}
+.global-busy-text{font-size:13px;color:#718078;margin-bottom:17px}
+.global-busy-track{height:7px;background:#e9efe9;border-radius:99px;overflow:hidden}
+.global-busy-bar{height:100%;width:38%;background:linear-gradient(90deg,#24543d,#70a77f,#24543d);border-radius:99px;animation:global-busy-run 1.25s ease-in-out infinite}
+@keyframes global-busy-spin{to{transform:rotate(360deg)}}
+@keyframes global-busy-run{0%{transform:translateX(-115%)}100%{transform:translateX(290%)}}
+@media(prefers-reduced-motion:reduce){.global-busy-spinner,.global-busy-bar{animation:none}.global-busy-bar{width:100%;transform:none}}
+@media print{.global-busy-overlay{display:none!important}}
+
+
+.global-busy-title.busy-dots::after{content:'';display:inline-block;width:1.5em;text-align:left;animation:global-busy-dots 1.25s steps(4,end) infinite}
+@keyframes global-busy-dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%,100%{content:'...'}}
+
+/* 使用者要求：不顯示全畫面資料載入遮罩 */
+.global-busy-overlay, #busyOverlay { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+</style><style>
+
+/* 全站共用置頂欄位置校正 v2：強制解除各頁舊版 max-width / padding 差異 */
+:root{
+ --site-header-height:72px;
+ --site-header-gutter:5vw;
+ --site-content-width:1120px;
+ --site-brand-size:48px;
+}
+html{scrollbar-gutter:stable}
+body>header,
+body>header.top,
+body>header.dash-top,
+body>header.site-topbar{
+ box-sizing:border-box!important;
+ display:flex!important;
+ position:sticky!important;
+ top:0!important;
+ z-index:1000!important;
+ width:100%!important;
+ max-width:none!important;
+ min-width:0!important;
+ height:var(--site-header-height)!important;
+ min-height:var(--site-header-height)!important;
+ margin:0!important;
+ padding:0 var(--site-header-gutter)!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:16px!important;
+ background:#fff!important;
+ border-bottom:1px solid #e1e8df!important;
+ box-shadow:0 1px 3px rgba(20,55,36,.025)!important;
+}
+body>header .brand,
+body>header .dash-brand,
+body>header .site-topbar-brand{
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ flex:0 1 auto!important;
+ min-width:0!important;
+ gap:12px!important;
+ margin:0!important;
+ padding:0!important;
+ color:#174b35!important;
+ font:800 16px/1.35 system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+ letter-spacing:.4px!important;
+ text-decoration:none!important;
+ white-space:nowrap!important;
+}
+body>header .brand img,
+body>header .dash-brand img,
+body>header .site-topbar-brand img{
+ display:block!important;
+ box-sizing:border-box!important;
+ width:var(--site-brand-size)!important;
+ height:var(--site-brand-size)!important;
+ min-width:var(--site-brand-size)!important;
+ min-height:var(--site-brand-size)!important;
+ max-width:var(--site-brand-size)!important;
+ max-height:var(--site-brand-size)!important;
+ flex:0 0 var(--site-brand-size)!important;
+ object-fit:contain!important;
+ margin:0!important;
+ padding:0!important;
+ border-radius:0!important;
+}
+body>header .actions,
+body>header .top-actions,
+body>header .user,
+body>header .dash-user,
+body>header .site-topbar-actions{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-end!important;
+ flex:0 0 auto!important;
+ gap:12px!important;
+ margin:0!important;
+ padding:0!important;
+ color:#718078!important;
+ font:13px system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+}
+body>header .login-name,
+body>header .top-login-name,
+body>header .user span,
+body>header .dash-user span,
+body>header .site-topbar-actions span{
+ max-width:240px!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+}
+body>header button,
+body>header .btn,
+body>header .logout,
+body>header .plain,
+body>header .site-topbar-logout{
+ box-sizing:border-box!important;
+ min-height:36px!important;
+ height:36px!important;
+ padding:0 14px!important;
+ border:1px solid #e1e8df!important;
+ border-radius:9px!important;
+ background:#fff!important;
+ color:#174b35!important;
+ font:700 13px system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+ line-height:1!important;
+ white-space:nowrap!important;
+}
+body>header button:hover,
+body>header .btn:hover,
+body>header .logout:hover,
+body>header .plain:hover,
+body>header .site-topbar-logout:hover{
+ background:#eaf2eb!important;border-color:#c8d8ca!important;
+}
+@media(max-width:700px){
+ :root{--site-header-height:64px;--site-header-gutter:14px;--site-brand-size:42px}
+ body>header,body>header.top,body>header.dash-top,body>header.site-topbar{
+  gap:8px!important;
+ }
+ body>header .brand,body>header .dash-brand,body>header .site-topbar-brand{
+  gap:7px!important;font-size:12px!important;letter-spacing:0!important;
+ }
+ body>header .actions,body>header .top-actions,body>header .user,
+ body>header .dash-user,body>header .site-topbar-actions{gap:6px!important;font-size:11px!important}
+ body>header .login-name,body>header .top-login-name,
+ body>header .user span,body>header .dash-user span,
+ body>header .site-topbar-actions span{max-width:100px!important}
+ body>header button,body>header .btn,body>header .logout,
+ body>header .plain,body>header .site-topbar-logout{
+  min-height:32px!important;height:32px!important;padding:0 9px!important;font-size:11px!important;
+ }
+}
+
+main,.wrap,#main{width:100%!important;max-width:1120px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;padding-left:22px!important;padding-right:22px!important;}
+</style>
+
+<style>
+
+/* 全站置頂欄文字與定位最終覆寫：統一品牌名稱、登入者與登出按鈕 */
+@media screen{
+  body > header,
+  body > header.top,
+  body > header.site-topbar,
+  body > header.dash-top{
+    box-sizing:border-box!important;
+    display:flex!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    height:72px!important;
+    min-height:72px!important;
+    margin:0!important;
+    padding:0 max(24px,5.35vw)!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    background:#fff!important;
+    border-bottom:1px solid #e1e8df!important;
+    position:sticky!important;
+    top:0!important;
+    z-index:1000!important;
+  }
+  body > header > a.brand,
+  body > header > a.dash-brand,
+  body > header > a.site-topbar-brand{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 1 auto!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.4!important;
+    letter-spacing:.3px!important;
+    text-decoration:none!important;
+    white-space:nowrap!important;
+  }
+  body > header > a.brand img,
+  body > header > a.dash-brand img,
+  body > header > a.site-topbar-brand img{
+    display:block!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    height:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    margin:0!important;
+    padding:0!important;
+    object-fit:contain!important;
+  }
+  body > header > a.brand span,
+  body > header > a.dash-brand span,
+  body > header > a.site-topbar-brand span{
+    display:inline-block!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.4!important;
+    letter-spacing:.3px!important;
+    white-space:nowrap!important;
+  }
+  body > header > div.actions,
+  body > header > div.top-actions,
+  body > header > div.user,
+  body > header > div.dash-user,
+  body > header > div.site-topbar-actions{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:12px!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body > header > div.actions > span,
+  body > header > div.top-actions > span,
+  body > header > div.user > span,
+  body > header > div.dash-user > span,
+  body > header > div.site-topbar-actions > span{
+    display:inline-block!important;
+    max-width:240px!important;
+    margin:0!important;
+    padding:0!important;
+    color:#718078!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:13px!important;
+    font-weight:500!important;
+    line-height:1.4!important;
+    letter-spacing:0!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body > header > div button,
+  body > header > div .btn,
+  body > header > div .plain,
+  body > header > div .logout,
+  body > header > div .site-topbar-logout{
+    box-sizing:border-box!important;
+    display:inline-flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:36px!important;
+    min-height:36px!important;
+    margin:0!important;
+    padding:0 14px!important;
+    border:1px solid #dce5dc!important;
+    border-radius:9px!important;
+    background:#fff!important;
+    color:#174b35!important;
+    font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif!important;
+    font-size:13px!important;
+    font-weight:700!important;
+    line-height:1!important;
+    letter-spacing:0!important;
+    white-space:nowrap!important;
+  }
+  body > header > div button:hover,
+  body > header > div .btn:hover,
+  body > header > div .plain:hover,
+  body > header > div .logout:hover,
+  body > header > div .site-topbar-logout:hover{
+    background:#eaf2eb!important;
+  }
+}
+@media screen and (max-width:700px){
+  body > header,
+  body > header.top,
+  body > header.site-topbar,
+  body > header.dash-top{
+    height:64px!important;min-height:64px!important;
+    padding:0 14px!important;gap:8px!important;
+  }
+  body > header > a.brand,
+  body > header > a.dash-brand,
+  body > header > a.site-topbar-brand{gap:8px!important;font-size:13px!important}
+  body > header > a.brand img,
+  body > header > a.dash-brand img,
+  body > header > a.site-topbar-brand img{
+    flex-basis:42px!important;width:42px!important;height:42px!important;
+    min-width:42px!important;max-width:42px!important;
+  }
+  body > header > a.brand span,
+  body > header > a.dash-brand span,
+  body > header > a.site-topbar-brand span{font-size:13px!important}
+  body > header > div.actions,
+  body > header > div.top-actions,
+  body > header > div.user,
+  body > header > div.dash-user,
+  body > header > div.site-topbar-actions{gap:7px!important}
+  body > header > div.actions > span,
+  body > header > div.top-actions > span,
+  body > header > div.user > span,
+  body > header > div.dash-user > span,
+  body > header > div.site-topbar-actions > span{max-width:100px!important;font-size:11px!important}
+  body > header > div button,
+  body > header > div .btn,
+  body > header > div .plain,
+  body > header > div .logout,
+  body > header > div .site-topbar-logout{
+    height:32px!important;min-height:32px!important;padding:0 9px!important;font-size:11px!important;
+  }
+}
+
+</style>
+  <link rel="stylesheet" href="assets/header.css">
+  <link rel="stylesheet" href="assets/page-heading.css">
+</head><body>
+<header class="app-header" data-title="全好蔬果｜員工操作紀錄" data-user-id="topLoginName" data-logout-id="logoutBtn"></header>
+<script src="assets/header.js"></script>
+<main><div class="heading page-heading"><div><h1 class="page-heading__title">員工操作紀錄</h1><p class="page-heading__description">管理者專用：查詢員工帳號建立、修改、停用、啟用、軟刪除及復原紀錄。</p></div><button class="secondary" id="refreshBtn">重新整理</button></div>
+<div id="message" class="message" role="status"></div>
+<section class="panel"><div class="filters">
+<div><label for="fromDate">開始日期</label><input id="fromDate" type="date"></div><div><label for="toDate">結束日期</label><input id="toDate" type="date"></div>
+<div><label for="actionFilter">操作類型</label><select id="actionFilter"><option value="">全部操作</option><option value="employee_created">建立員工</option><option value="employee_updated">修改員工</option><option value="employee_disabled">停用員工</option><option value="employee_enabled">啟用員工</option><option value="employee_deleted">軟刪除員工</option><option value="employee_restored">復原員工</option></select></div><button class="primary" id="filterBtn">套用篩選</button></div><p class="muted">預設顯示最近 200 筆。台灣時間顯示。</p></section>
+<section class="panel"><div class="table-wrap"><table><thead><tr><th>操作時間</th><th>操作人</th><th>員工姓名</th><th>操作類型</th><th>操作內容</th><th>紀錄編號</th></tr></thead><tbody id="logRows"><tr><td colspan="6" class="empty">載入中…</td></tr></tbody></table></div></section></main>
+<div class="global-busy-overlay" id="globalBusyOverlay" role="status" aria-live="polite" aria-hidden="true"><section class="global-busy-card"><div class="global-busy-spinner" aria-hidden="true"></div><div class="global-busy-title">正在處理，請稍候…</div><div class="global-busy-text">系統正在讀取或更新資料，請稍候，請勿重複操作。</div><div class="global-busy-track" aria-hidden="true"><div class="global-busy-bar"></div></div></section></div>
+<script>
+/* 全站統一 Loading：初始載入、頁面切換、資料讀取、儲存與刪除 */
+(function(){
+  const overlay = document.getElementById('globalBusyOverlay') || document.getElementById('busyOverlay');
+  if (!overlay || window.__globalBusyControllerInstalled) return;
+  window.__globalBusyControllerInstalled = true;
+
+  const title = overlay.querySelector('.global-busy-title') || overlay.querySelector('#busyTitle');
+  const detail = overlay.querySelector('.global-busy-text') || overlay.querySelector('#busyText');
+  let active = 0, pendingInitial = 0, pageLoaded = false, showTimer = null, hideTimer = null;
+  let currentKind = 'load';
+
+  function setText(kind){
+    currentKind = kind;
+    if(title){
+      title.classList.toggle('busy-dots', kind === 'save' || kind === 'load' || kind === 'delete');
+      title.textContent = ({
+        load:'資料載入中', save:'儲存中', delete:'刪除中'
+      })[kind] || '資料處理中';
+    }
+    if(detail){
+      detail.textContent = ({
+        load:'正在讀取資料，請稍候…',
+        save:'正在儲存資料，請稍候，請勿重複操作。',
+        delete:'正在安全刪除資料，請稍候，請勿重複操作。',
+        switch:'正在準備頁面內容，請稍候…'
+      })[kind] || '系統正在處理資料，請稍候…';
+    }
+  }
+  function show(kind){
+    if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    setText(kind);
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+  }
+  function hide(){
+    if(active > 0 || !pageLoaded) return;
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+  }
+
+  // 不因頁面初始載入或頁面切換顯示全頁遮罩；僅在實際資料請求時顯示。
+  window.addEventListener('load', function(){
+    pageLoaded = true;
+    if(active === 0) setTimeout(hide, 180);
+  }, {once:true});
+const nativeFetch = window.fetch.bind(window);
+  window.fetch = function(input, init){
+    const raw = typeof input === 'string' ? input : (input && input.url) || '';
+    const tracked = !window.__suppressGlobalBusy &&
+      (/supabase\.co|workers\.dev/i.test(raw));
+    if(!tracked) return nativeFetch(input, init);
+
+    const method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    const destructive = method === 'DELETE' || /delete|remove|hard-delete/i.test(raw);
+    const writing = ['POST','PUT','PATCH'].includes(method);
+    const kind = destructive ? 'delete' : writing ? 'save' : 'load';
+
+    active++;
+    pendingInitial++;
+    if(showTimer) clearTimeout(showTimer);
+    if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    // 顯示延遲避免極短請求造成閃爍；頁面初始 Loading 已經顯示
+    showTimer = setTimeout(()=>show(kind), 100);
+
+    let request;
+    try{request = nativeFetch(input, init);}
+    catch(error){finish();throw error;}
+    return request.finally(finish);
+  };
+
+  function finish(){
+    active = Math.max(0, active - 1);
+    pendingInitial = Math.max(0, pendingInitial - 1);
+    if(active === 0){
+      if(showTimer){clearTimeout(showTimer);showTimer=null;}
+      hideTimer = setTimeout(hide, 220);
+    }
+  }
+
+  // 提供頁面程式可共用的手動控制介面
+  window.showGlobalLoading = function(kind='load'){show(kind);};
+  window.hideGlobalLoading = function(){if(active===0){pageLoaded=true;hide();}};
+})();
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+const SUPABASE_URL = "https://aiojcpfahyooveqthhwy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_SW-Ji-Co-5cUBe1b5K0Grw_lm9WO8Je";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const rows=document.getElementById("logRows"),msg=document.getElementById("message");let names={};
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function say(t,e=false){msg.textContent=t;msg.className="message show"+(e?" error":"");}
+function dt(v){return v?new Date(v).toLocaleString("zh-TW",{hour12:false,timeZone:"Asia/Taipei"}):"—";}
+const labels={employee_created:"建立員工",employee_updated:"修改員工",employee_disabled:"停用員工",employee_enabled:"啟用員工",employee_deleted:"軟刪除員工",employee_restored:"復原員工"};
+async function init() {
+  try {
+    say("正在確認登入狀態……");
+
+    const { data, error } = await sb.auth.getSession();
+
+    if (error) {
+      console.error("Session 查詢錯誤：", error);
+      say("Session 查詢失敗：" + error.message, true);
+      return;
+    }
+
+    if (!data.session) {
+      say("目前沒有有效的登入 Session，請重新登入。", true);
+      return;
+    }
+
+    say("登入正常，正在確認管理者權限……");
+
+    const { data: p, error: pe } = await sb
+      .from("profiles")
+      .select("id,role,display_name,is_active,deleted_at")
+      .eq("id", data.session.user.id)
+      .single();
+
+    if (pe) {
+      console.error("管理者資料查詢錯誤：", pe);
+      say("管理者資料查詢失敗：" + pe.message, true);
+      return;
+    }
+
+    if (!p) {
+      say("找不到目前登入者的 profiles 資料。", true);
+      return;
+    }
+
+    if (
+      p.role !== "admin" ||
+      p.is_active !== true ||
+      p.deleted_at !== null
+    ) {
+      console.error("管理者權限不符合：", p);
+      say("目前帳號不符合管理者權限條件。", true);
+      return;
+    }
+
+    const loginName = p.display_name || data.session.user.email || "管理者";
+    const loginNameEl = document.getElementById("topLoginName");
+    if (loginNameEl) { loginNameEl.textContent = loginName; loginNameEl.title = loginName; }
+
+    say("管理者驗證成功，正在讀取員工資料……");
+
+    const { data: ps, error: psErr } = await sb
+      .from("profiles")
+      .select("id,display_name")
+      .limit(1000);
+
+    if (psErr) {
+      console.error("員工姓名查詢錯誤：", psErr);
+      say("無法讀取姓名資料：" + psErr.message, true);
+      return;
+    }
+
+    names = Object.fromEntries(
+      (ps || []).map(x => [
+        x.id,
+        x.display_name || "（未設定姓名）"
+      ])
+    );
+
+    say("管理者驗證完成，正在讀取操作紀錄……");
+
+    await load();
+
+  } catch (error) {
+    console.error("員工操作紀錄初始化錯誤：", error);
+    say("初始化發生錯誤：" + error.message, true);
+  }
+}
+async function load(){rows.innerHTML='<tr><td colspan="6" class="empty">載入中…</td></tr>';let q=sb.from("audit_logs").select("id,user_id,action,table_name,record_id,details,created_at").eq("table_name","employee_accounts").order("created_at",{ascending:false}).limit(200);
+const f=document.getElementById("fromDate").value,t=document.getElementById("toDate").value,a=document.getElementById("actionFilter").value;if(f)q=q.gte("created_at",new Date(f+"T00:00:00+08:00").toISOString());if(t)q=q.lte("created_at",new Date(t+"T23:59:59+08:00").toISOString());if(a)q=q.eq("action",a);
+const {data,error}=await q;if(error){rows.innerHTML='<tr><td colspan="6" class="empty">讀取失敗</td></tr>';say("讀取操作紀錄失敗："+error.message,true);return;}
+if(!data?.length){rows.innerHTML='<tr><td colspan="6" class="empty">目前沒有員工操作紀錄。完成 Worker 稽核寫入功能部署後，新操作才會出現在這裡。</td></tr>';return;}
+rows.innerHTML=data.map(x=>{const d=x.details||{};return `<tr><td>${esc(dt(x.created_at))}</td><td>${esc(names[x.user_id]||"管理者")}</td><td>${esc(d.employee_name||d.display_name||names[x.record_id]||"（員工資料不可用）")}</td><td><span class="pill">${esc(labels[x.action]||x.action||"—")}</span></td><td>${esc(d.summary||d.message||d.email||"—")}</td><td>${esc(x.id)}</td></tr>`;}).join("");}
+document.getElementById("refreshBtn").onclick=load;document.getElementById("filterBtn").onclick=load;document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.replace("index.html");};init();
+</script></body></html>
